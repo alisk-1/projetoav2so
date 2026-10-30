@@ -4,6 +4,7 @@ import threading
 import time
 
 arquivo = "votacao_candidato_munzona_2026_SP.csv"
+municipi = "GUARULHOS"
 
 def calcular(dados):
   
@@ -31,7 +32,7 @@ if __name__ == "__main__":
     tempo_do_processo = time.perf_counter() - inicio_processos
 
     inicio_thread = time.perf_counter()
-    resultado_da_threads = None 
+    resultado_da_threads = []
     
     def executar_na_thread():
         resultado_da_threads.append(calcular(df))
@@ -43,4 +44,54 @@ if __name__ == "__main__":
     tempo_da_threads = time.perf_counter() - inicio_thread
 
     media_global, media_partidos, media_cargos = resultado_do_processo
+
+    partido_vencedor = media_partidos.idxmax()
+    cargo_vencedor = media_cargos.idxmax()
+
+    print("Resultado Multiprocesso")
+    print(f"Média geral:{media_global}")
+
+    print("Partido com maior média",partido_vencedor)
+    print(f"Média : {media_partidos[partido_vencedor]:.2f}")
+
+    print("Cargo com maior média :", cargo_vencedor)
+    print(f"Média: {media_cargos[cargo_vencedor]:.2f}")
+
+    print(f"Tempo dos processos: {tempo_do_processo:.2f} Segunods")
+
+    if resultado_da_threads:
+        media_global, media_partidos,media_cargos = resultado_da_threads[0]
+
+        print("\nResultado multithreading")
+        print(f"Média geral: {media_global:.2f}")
+
+        partido_vencedor = media_partidos.idxmax()
+        cargo_vencedor = media_cargos.idxmax()
+
+        print("Partido com maior média",partido_vencedor)
+        print(f"Média: {media_cargos[cargo_vencedor]:.2f}")
+    
+    print(f"Tempo das thereds:{tempo_da_threads:.2f} Segundos")
+
+    print("Comparar desenpenho")
+
+    if tempo_do_processo < tempo_da_threads:
+        print("Multiprocesso foi mais rápido")
+    elif tempo_da_threads < tempo_do_processo:
+        print("MultiThreads foi mais rápido")
+
+    else:
+        print("As duas tiveram o mesmo tempo")
+
+    print("\n Programa finaizado")
+
+
+
+
+
+
+
+
+
+
 
