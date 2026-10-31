@@ -22,7 +22,7 @@ def calcular(dados):
     return media, partidos, cargo
 
 if __name__ == "__main__":
-    print("Lendo o arquivo...")
+    print("\nLendo o arquivo...")
 
     df = pd.read_csv(arquivo, sep=";", encoding="latin1", low_memory=False)
 
@@ -48,7 +48,7 @@ if __name__ == "__main__":
     partido_vencedor = media_partidos.idxmax()
     cargo_vencedor = media_cargos.idxmax()
 
-    print("Resultado Multiprocesso")
+    print("\nResultado Multiprocesso")
     print(f"Média geral:{media_global}")
 
     print("Partido com maior média",partido_vencedor)
@@ -58,6 +58,8 @@ if __name__ == "__main__":
     print(f"Média: {media_cargos[cargo_vencedor]:.2f}")
 
     print(f"Tempo dos processos: {tempo_do_processo:.2f} Segunods")
+
+    time.sleep(5)
 
     if resultado_da_threads:
         media_global, media_partidos,media_cargos = resultado_da_threads[0]
@@ -75,6 +77,7 @@ if __name__ == "__main__":
 
     print("Comparar desenpenho")
 
+
     if tempo_do_processo < tempo_da_threads:
         print("Multiprocesso foi mais rápido")
     elif tempo_da_threads < tempo_do_processo:
@@ -82,6 +85,8 @@ if __name__ == "__main__":
 
     else:
         print("As duas tiveram o mesmo tempo")
+
+    time.sleep(5)
 
     print("\n Programa finaizado")
 
