@@ -18,7 +18,6 @@ TOTAL_DE_DIVISOES = 4
 
 
 def processar_chunk(df_chunk):
-    
     df_chunk = df_chunk.copy()
     
     df_chunk["QT_VOTOS_NOMINAIS_VALIDOS"] = pd.to_numeric(
@@ -37,6 +36,7 @@ def processar_chunk(df_chunk):
         "partidos": partidos,
         "cargos": cargos
     }
+
 
 def consolidar_resultados(resultados_parciais):
     
@@ -61,6 +61,26 @@ def consolidar_resultados(resultados_parciais):
     }
 
 
+def rodar_com_threads(chunks):
+    
+    inicio = time.perf_counter()
+    with ThreadPool(processes=TOTAL_DE_DIVISOES) as pool:
+        resultados = pool.map(processar_chunk, chunks)
+    res_final = consolidar_resultados(resultados)
+    tempo = time.perf_counter() - inicio
+    return res_final, tempo
+
+
+def rodar_com_processos(chunks):
+    
+    inicio = time.perf_counter()
+    with Pool(processes=TOTAL_DE_DIVISOES) as pool:
+        resultados = pool.map(processar_chunk, chunks)
+    res_final = consolidar_resultados(resultados)
+    tempo = time.perf_counter() - inicio
+    return res_final, tempo
+
+
 if __name__ == "__main__":
     console.print(
         Panel(
@@ -78,12 +98,12 @@ if __name__ == "__main__":
     total_registros = len(df_filtrado)
 
     tabela_info = Table(title="DADOS", box=box.ROUNDED)
-    tabela_info.add_column("Itens", style="cyan")
-    tabela_info.add_column("Detalhes", style="yellow")
+    tabela_info.add_column("Itens", style="bold cyan")
+    tabela_info.add_column("Detalhes", style="purple")
     tabela_info.add_row("PID Principal(N° de identificação do sistema)", str(os.getpid()))
     tabela_info.add_row("Município Selecionado", MUNICIPIO)
     tabela_info.add_row("Total de Registros", f"{total_registros:,}")
-    tabela_info.add_row("N° de divisões", f"{TOTAL_DE_DIVISOES} trabalhadores (threads/processos)")
+    tabela_info.add_row("N° de divisões", f"{TOTAL_DE_DIVISOES} (threads/processos)")
     
     console.print(tabela_info)
     console.print()
@@ -94,26 +114,13 @@ if __name__ == "__main__":
         for i in range(TOTAL_DE_DIVISOES)
     ]
 
-    inicio_t = time.perf_counter()
-    
-    with ThreadPool(processes=TOTAL_DE_DIVISOES) as pool_threads:
-        resultados_threads = pool_threads.map(processar_chunk, chunks)
-
-    res_final_threads = consolidar_resultados(resultados_threads)
-    tempo_threads = time.perf_counter() - inicio_t
-
-    inicio_p = time.perf_counter()
-
-    with Pool(processes=TOTAL_DE_DIVISOES) as pool_processos:
-        resultados_processos = pool_processos.map(processar_chunk, chunks)
-
-    res_final_processos = consolidar_resultados(resultados_processos)
-    tempo_processos = time.perf_counter() - inicio_p
+    res_final_threads, tempo_threads = rodar_com_threads(chunks)
+    res_final_processos, tempo_processos = rodar_com_processos(chunks)
 
     tabela_resultados = Table(title="RESULTADOS DA APURAÇÃO", box=box.ROUNDED)
-    tabela_resultados.add_column("Indicador Requisitado", style="cyan")
+    tabela_resultados.add_column("Indicador Requisitado", style="bold cyan")
     tabela_resultados.add_column("Detalhes / Vencedor", style="bold green")
-    tabela_resultados.add_column("Média de Votos", justify="right", style="yellow")
+    tabela_resultados.add_column("Média de Votos", justify="right", style="purple")
 
     tabela_resultados.add_row(
         "Média Geral do Município",
@@ -135,8 +142,8 @@ if __name__ == "__main__":
     console.print()
 
     tabela_desempenho = Table(title="COMPARANDO O DESEMPENHO", box=box.ROUNDED)
-    tabela_desempenho.add_column("Abordagem", style="cyan")
-    tabela_desempenho.add_column("Tempo de Execução (s)", justify="right", style="yellow")
+    tabela_desempenho.add_column("Abordagem", style="bold cyan")
+    tabela_desempenho.add_column("Tempo de Execução (s)", justify="right", style="purple")
     tabela_desempenho.add_column("Vencedor (Melhor Desempenho)", justify="center")
 
     eh_processo_mais_rapido = tempo_processos < tempo_threads
@@ -144,12 +151,12 @@ if __name__ == "__main__":
     tabela_desempenho.add_row(
         "Multiprocessing",
         f"{tempo_processos:.4f}",
-        "[bold green]Mais Rápido[/bold green]" if eh_processo_mais_rapido else "[yellow]—[/yellow]"
+        "[bold green]Mais Rápido[/bold green]" if eh_processo_mais_rapido else "[purple]—[/purple]"
     )
     tabela_desempenho.add_row(
         "Multithreading",
         f"{tempo_threads:.4f}",
-        "[bold green]Mais Rápido[/bold green]" if not eh_processo_mais_rapido else "[yellow]—[/yellow]"
+        "[bold green]Mais Rápido[/bold green]" if not eh_processo_mais_rapido else "[purple]—[/purple]"
     )
 
     console.print(tabela_desempenho)
