@@ -16,7 +16,6 @@ MUNICIPIO = "GUARULHOS"
 
 TOTAL_DE_DIVISOES = 4
 
-
 def processar_chunk(df_chunk):
     df_chunk = df_chunk.copy()
     
